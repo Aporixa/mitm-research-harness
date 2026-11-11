@@ -8,6 +8,7 @@ All inputs are synthetic and written inline; none is a real capture.
 import json
 import re
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
@@ -473,6 +474,33 @@ def test_codex_code_mode_exec():
                       input={"command": "/bin/bash -lc 'echo hi'"}, source="stream")
     assert wire.kind == "shell"
     assert ad.shell_command(wire) == ad.shell_command(stream) == "echo hi"
+
+
+def test_codex_code_mode_multi_command():
+    """One code-mode script running two commands pairs with both stream
+    items (pilot K2: write, then cat)."""
+    from mrh.adapters import get_adapter
+    from mrh.analyze.correlate import correlate
+    from mrh.events import ToolCall
+
+    ad = get_adapter("codex")
+    js = ('await tools.exec_command({cmd:"printf %s ok > p.txt"});\n'
+          'const r = await tools.exec_command({cmd:"cat p.txt"});text(r.output);')
+    call = ToolCall(tool_id="call_1", name="exec", kind="shell", input={"input": js}, source="wire")
+    with mock.patch.dict("mrh.adapters.base.PARSERS",
+                         {ad.wire_format: lambda recs, kind: WireParse(tool_calls=[call])}):
+        wp = ad.parse_wire([])
+    assert [c.tool_id for c in wp.tool_calls] == ["call_1#0", "call_1#1"]
+    assert [ad.shell_command(c) for c in wp.tool_calls] == ["printf %s ok > p.txt", "cat p.txt"]
+
+    lines = [json.dumps({"type": "item.completed", "item": {
+                "id": f"item_{i}", "type": "command_execution", "command": f"/bin/bash -lc '{c}'",
+                "aggregated_output": out, "exit_code": 0, "status": "completed"}})
+             for i, (c, out) in enumerate([("printf %s ok > p.txt", ""), ("cat p.txt", "ok")], 1)]
+    sp = ad.parse_stream(lines)
+    corr = correlate(ad, wp, sp, None)
+    assert corr.stream_only == [] and corr.wire_only == [] and corr.input_diff == []
+    assert [v.result_head for v in corr.calls] == ["", "ok"]
 
 
 def test_sandbox_failure_flag():

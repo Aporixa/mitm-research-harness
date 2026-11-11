@@ -129,7 +129,7 @@ def run(exp: Experiment, spec_path: Path, out_root: Path, limit: int | None = No
                              "Rebuild the image for that version or pass --allow-version-drift "
                              "(the drift is recorded in run.json).")
         if adapters[name].experimental:
-            print(f"warning: adapter {name} is experimental (fixture-tested only); "
+            print(f"warning: adapter {name} is experimental (not yet through the Stage-0 pilot); "
                   "check one session by hand before trusting results", file=sys.stderr)
         if max_cost_usd is not None and name != "claude-code":
             print(f"warning: {name} reports no cost; --max-cost does not cover it",

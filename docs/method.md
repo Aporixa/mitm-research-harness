@@ -18,9 +18,9 @@ write/edit/read, fetch, search, MCP, other). `mrh adapters` lists them.
 
 | adapter | lab | headless mode | wire format | status |
 |---|---|---|---|---|
-| `claude-code` | Anthropic | `claude --print --output-format stream-json` | Messages API (SSE) | verified against live captures (v1) |
-| `codex` | OpenAI | `codex exec --json` | Responses / Chat Completions | experimental: fixture-tested only |
-| `gemini-cli` | Google | `gemini --output-format stream-json` | generateContent (Gemini API, Vertex, Code Assist) | experimental: fixture-tested only |
+| `claude-code` | Anthropic | `claude --print --output-format stream-json` | Messages API (SSE) | Stage-0 pilot passed (docs/validation.md) |
+| `codex` | OpenAI | `codex exec --json` | Responses / Chat Completions (WebSocket and SSE) | Stage-0 pilot passed (docs/validation.md) |
+| `gemini-cli` | Google | `gemini --output-format stream-json` | generateContent (Gemini API, Vertex, Code Assist) | experimental: see docs/validation.md |
 
 An experiment can mix adapters: a model entry may name its own adapter
 (`{id: gpt-5-codex, adapter: codex}`), and `agent_versions` pins each
@@ -209,8 +209,11 @@ preregistration).
   that weakens the container, so it is not the default.
 - Codex code mode: some models (gpt-6-astra) call one `exec` tool whose
   input is JavaScript that calls `tools.exec_command` and others. The
-  adapter treats it as a shell call and takes the first command as its
-  target. A script that runs several commands pairs with only the first
-  stream item; the rest show as `stream_only`.
+  adapter splits each script into one shell call per `exec_command`
+  (ids `<call>#0`, `<call>#1`, ...), matching the separate
+  `command_execution` items Codex reports, so each command is paired and
+  checked on its own. Commands the regex cannot read (built from variables,
+  for example) are not seen; tools other than `exec_command` called from the
+  script are not checked.
 - Cost caps (`--max-cost`) use the cost Claude Code reports. Codex and
   Gemini CLI report none, so cap their spend on the provider side.

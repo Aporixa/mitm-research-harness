@@ -21,9 +21,9 @@ output stream:
 
 | adapter | lab | wire format | status |
 |---|---|---|---|
-| `claude-code` | Anthropic | Messages API | verified against live captures (v1) |
-| `codex` | OpenAI | Responses / Chat Completions | experimental: fixture-tested only |
-| `gemini-cli` | Google | generateContent (Gemini API, Vertex, Code Assist) | experimental: fixture-tested only |
+| `claude-code` | Anthropic | Messages API | Stage-0 pilot passed (9/9, 2026-11-11) |
+| `codex` | OpenAI | Responses / Chat Completions | Stage-0 pilot passed (9/9, 2026-11-11) |
+| `gemini-cli` | Google | generateContent (Gemini API, Vertex, Code Assist) | experimental: live dummy-key run; pilot pending |
 
 One experiment can run models from several labs side by side. Adding an
 agent is one subclass of `mrh.adapters.base.Adapter` (see
@@ -150,10 +150,21 @@ failed, `capture_problems`, which excludes it from every rate. See
 
 ## Status
 
-`2.0.0.dev0`. The analysis pipeline is tested on synthetic fixtures for
-all three adapters. Capture against a live agent has not been run with
-this version yet. Do that first: `doctor`, then a dummy-key run (which
-should come out `api_errors_only`), then the Stage-0 pilot.
+`2.0.0.dev0`, in Stage-0 validation. Every live run so far, what it
+showed and what it changed is in [`docs/validation.md`](docs/validation.md).
+
+- All three agents have been run live through the proxy with invalid keys:
+  capture, CA trust, key handling and redaction work for each.
+- Claude Code (claude-sonnet-5-5) and Codex (gpt-6-astra) passed the
+  Stage-0 pilot: 9 of 9 trials each, every one captured cleanly with the
+  effect confirmed in the syscall trace. Getting Codex there took five
+  fixes found by live runs (key variable, WebSocket capture, sandbox,
+  code-mode tool calls, telemetry) plus a scrub for keys echoed in errors.
+- Gemini CLI has only a dummy-key run so far; it is still experimental.
+- No experiment results exist yet: these runs check capture, not models.
+
+To repeat the validation: `doctor`, a dummy-key run per agent (expected
+`api_errors_only`), then the Stage-0 pilot.
 
 ## License
 

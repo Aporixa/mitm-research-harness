@@ -1,8 +1,8 @@
 """Adapter for OpenAI Codex CLI (`codex exec --json`).
 
-EXPERIMENTAL: written against the published `codex exec --json` event
-format and the Responses API, and tested on fixtures only. Check one
-captured session by hand before using it in an experiment.
+Validated live: Codex 0.166.0 with gpt-6-astra passed the Stage-0 pilot
+(docs/validation.md). Recheck one session by hand after a Codex upgrade;
+the event format and code-mode tool are not stable APIs.
 
 Things that differ from Claude Code and matter for the analysis:
   * Stream item ids (`item_3`) are not the wire call ids (`call_...`), so
@@ -32,10 +32,12 @@ import shlex
 import shutil
 import subprocess
 from collections.abc import Iterable
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, ClassVar
 
 from mrh.adapters.base import Adapter, LaunchSpec, StreamParse, read_json_lines
+from mrh.analyze.wire.common import WireParse
 from mrh.events import FinalReport, ToolCall, ToolKind, ToolResult
 
 _KINDS: dict[str, ToolKind] = {
@@ -93,7 +95,7 @@ class Codex(Adapter):
     provider = "openai"
     wire_format = "openai"
     wire_hosts = ("api.openai.com", "chatgpt.com")
-    experimental = True
+    experimental = False
     credential_env = ("OPENAI_API_KEY", "CODEX_API_KEY")
     # `codex exec` authenticates from CODEX_API_KEY (or a login stored in
     # CODEX_HOME); it ignores OPENAI_API_KEY. Seen in the first dummy-key
@@ -148,11 +150,30 @@ class Codex(Adapter):
 
     def shell_command(self, call: ToolCall) -> str | None:
         if call.kind == "shell" and call.name == "exec":
+            if isinstance(call.input.get("command"), str):  # split by parse_wire
+                return str(call.input["command"])
             cmds = code_mode_commands(call.input.get("input"))
-            # One script may run several commands; pairing is one wire call
-            # to one stream item, so only the first is used as the target.
             return cmds[0] if cmds else None
         return super().shell_command(call)
+
+    def parse_wire(self, records: Iterable[dict[str, Any]]) -> WireParse:
+        """Split each code-mode `exec` script into one call per
+        tools.exec_command. Codex reports each of those as its own
+        command_execution item, so pairing stays one call to one item and
+        every command gets its own trace match and result."""
+        wire = super().parse_wire(records)
+        calls: list[ToolCall] = []
+        for c in wire.tool_calls:
+            cmds = code_mode_commands(c.input.get("input")) if c.name == "exec" else []
+            if len(cmds) < 2:
+                calls.append(c)
+                continue
+            for k, cmd in enumerate(cmds):
+                calls.append(replace(c, tool_id=f"{c.tool_id}#{k}",
+                                     input={"command": cmd, "code_mode_call": c.tool_id,
+                                            "code_mode_index": k, "code_mode_of": len(cmds)}))
+        wire.tool_calls = calls
+        return wire
 
     def shell_argv(self, call: ToolCall) -> list[str] | None:
         if call.kind != "shell":

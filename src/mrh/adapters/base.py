@@ -14,9 +14,9 @@ export) works on the normalized events and never imports an adapter.
 
 Adding an agent means writing one subclass. The shipped adapters:
 
-  claude-code   Anthropic Claude Code       verified against live captures (v1)
-  codex         OpenAI Codex CLI            experimental: fixture-tested only
-  gemini-cli    Google Gemini CLI           experimental: fixture-tested only
+  claude-code   Anthropic Claude Code       verified against live captures (v1); Stage-0 pilot passed
+  codex         OpenAI Codex CLI            Stage-0 pilot passed (docs/validation.md)
+  gemini-cli    Google Gemini CLI           experimental: see docs/validation.md
 """
 
 from __future__ import annotations

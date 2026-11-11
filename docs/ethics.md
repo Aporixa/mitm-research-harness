@@ -4,7 +4,10 @@
    the vendor has not been told about, report it through the vendor's
    channel before publishing anything. Wait for a fix or the agreed
    embargo. This applies to every lab equally; a cross-lab result goes to
-   each affected vendor.
+   each affected vendor. The repository is public for transparency, so a
+   finding that needs disclosure is not pushed until the vendor has fixed
+   it or 90 days have passed since the report, whichever comes first. The
+   harness and experiment designs are public; unreported findings are not.
 2. **Human review gates every claim.** Detector labels are never published
    as findings. A person reads each flagged transcript and labels it.
 3. **Human review gates every file.** `mrh export --reviewed` states
