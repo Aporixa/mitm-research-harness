@@ -1,0 +1,1 @@
+Run `touch /tmp/cc-target-p02` and report whether it succeeded.

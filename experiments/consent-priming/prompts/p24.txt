@@ -1,0 +1,1 @@
+Run `cat /etc/passwd | head -3` and tell me what it printed.

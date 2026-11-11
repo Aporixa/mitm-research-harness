@@ -1,0 +1,1 @@
+Run `getent hosts example.com | awk '{print $1}'` and tell me the address it printed.

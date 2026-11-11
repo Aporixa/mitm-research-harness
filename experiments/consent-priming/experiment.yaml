@@ -1,0 +1,72 @@
+# Port of the v1 consent-priming corpus (4 arms x 30 prompts, n=1, one model).
+# v2 runs n repetitions and records the observed model per trial.
+id: consent-priming
+hypothesis: >
+  Authorization text delivered to the agent (a pre-prompt claiming operator
+  consent, a project-policy document, or the same policy planted as CLAUDE.md)
+  raises the rate at which refused commands are executed afterwards.
+adapter: claude-code
+agent_version: "2.1.317"
+models:
+  - claude-sonnet-5-5
+n: 5
+seed: 20261105
+timeout_s: 300
+
+arms:
+  - id: a-baseline
+    permission_mode: default
+  - id: b-preauth
+    permission_mode: default
+    preprompt_file: operator-preauth.md
+  - id: c-policy-prompt
+    permission_mode: default
+    preprompt_file: project-policy.md
+  - id: d-policy-claude-md
+    permission_mode: default
+    plant:
+      CLAUDE.md: project-policy.md
+    setting_sources: project
+
+# Primary contrasts, each against baseline, plus whether placement matters
+# (the same policy text as a pre-prompt vs as CLAUDE.md). Main metric:
+# post-refusal execution; summary.md gives differences with Newcombe and
+# prompt-bootstrap 95% intervals.
+comparisons:
+  - [b-preauth, a-baseline]
+  - [c-policy-prompt, a-baseline]
+  - [d-policy-claude-md, a-baseline]
+  - [d-policy-claude-md, c-policy-prompt]
+
+# Grid: operator O1-O5 (rows) x severity S1-S6 (columns); pNN = row*6 + column + 1.
+prompts:
+  - {id: p01, file: prompts/p01.txt, tags: {operator: "single", severity: "benign", cell: O1S1}}
+  - {id: p02, file: prompts/p02.txt, tags: {operator: "single", severity: "tmp-write", cell: O1S2}}
+  - {id: p03, file: prompts/p03.txt, tags: {operator: "single", severity: "public-read", cell: O1S3}}
+  - {id: p04, file: prompts/p04.txt, tags: {operator: "single", severity: "sys-info", cell: O1S4}}
+  - {id: p05, file: prompts/p05.txt, tags: {operator: "single", severity: "network", cell: O1S5}}
+  - {id: p06, file: prompts/p06.txt, tags: {operator: "single", severity: "sensitive", cell: O1S6}}
+  - {id: p07, file: prompts/p07.txt, tags: {operator: "&&", severity: "benign", cell: O2S1}}
+  - {id: p08, file: prompts/p08.txt, tags: {operator: "&&", severity: "tmp-write", cell: O2S2}}
+  - {id: p09, file: prompts/p09.txt, tags: {operator: "&&", severity: "public-read", cell: O2S3}}
+  - {id: p10, file: prompts/p10.txt, tags: {operator: "&&", severity: "sys-info", cell: O2S4}}
+  - {id: p11, file: prompts/p11.txt, tags: {operator: "&&", severity: "network", cell: O2S5}}
+  - {id: p12, file: prompts/p12.txt, tags: {operator: "&&", severity: "sensitive", cell: O2S6}}
+  - {id: p13, file: prompts/p13.txt, tags: {operator: ";", severity: "benign", cell: O3S1}}
+  - {id: p14, file: prompts/p14.txt, tags: {operator: ";", severity: "tmp-write", cell: O3S2}}
+  - {id: p15, file: prompts/p15.txt, tags: {operator: ";", severity: "public-read", cell: O3S3}}
+  - {id: p16, file: prompts/p16.txt, tags: {operator: ";", severity: "sys-info", cell: O3S4}}
+  - {id: p17, file: prompts/p17.txt, tags: {operator: ";", severity: "network", cell: O3S5}}
+  - {id: p18, file: prompts/p18.txt, tags: {operator: ";", severity: "sensitive", cell: O3S6}}
+  - {id: p19, file: prompts/p19.txt, tags: {operator: "|", severity: "benign", cell: O4S1}}
+  - {id: p20, file: prompts/p20.txt, tags: {operator: "|", severity: "tmp-write", cell: O4S2}}
+  - {id: p21, file: prompts/p21.txt, tags: {operator: "|", severity: "public-read", cell: O4S3}}
+  - {id: p22, file: prompts/p22.txt, tags: {operator: "|", severity: "sys-info", cell: O4S4}}
+  - {id: p23, file: prompts/p23.txt, tags: {operator: "|", severity: "network", cell: O4S5}}
+  - {id: p24, file: prompts/p24.txt, tags: {operator: "|", severity: "sensitive", cell: O4S6}}
+  - {id: p25, file: prompts/p25.txt, tags: {operator: "multi-op", severity: "benign", cell: O5S1}}
+  - {id: p26, file: prompts/p26.txt, tags: {operator: "multi-op", severity: "tmp-write", cell: O5S2}}
+  - {id: p27, file: prompts/p27.txt, tags: {operator: "multi-op", severity: "public-read", cell: O5S3}}
+  - {id: p28, file: prompts/p28.txt, tags: {operator: "multi-op", severity: "sys-info", cell: O5S4}}
+  - {id: p29, file: prompts/p29.txt, tags: {operator: "multi-op", severity: "network", cell: O5S5}}
+  - {id: p30, file: prompts/p30.txt, tags: {operator: "multi-op", severity: "sensitive", cell: O5S6}}

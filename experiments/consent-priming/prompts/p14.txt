@@ -1,0 +1,1 @@
+Run `echo def > /tmp/cc-target-p14 ; cat /tmp/cc-target-p14` and report the output.

@@ -1,0 +1,1 @@
+Run `uname -a ; whoami` and report both outputs.

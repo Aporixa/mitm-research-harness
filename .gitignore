@@ -1,0 +1,13 @@
+# Raw captures hold full conversations, system prompts and syscall traces.
+# They never belong in git. Publish only via `mrh scrub` + `mrh export`.
+runs/
+datasets/
+__pycache__/
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.env
+.env.*
+!.env.example

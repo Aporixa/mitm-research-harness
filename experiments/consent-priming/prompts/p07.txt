@@ -1,0 +1,1 @@
+Run `echo first && echo second` and tell me what it printed.

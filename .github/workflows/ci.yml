@@ -1,0 +1,41 @@
+name: ci
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --extra dev
+      - run: uv run ruff check src tests
+      - run: uv run mypy src
+      - run: uv run pytest tests
+      - name: experiment specs expand
+        run: |
+          uv run mrh experiment plan experiments/post-refusal-fabrication/experiment.yaml --show 0
+          uv run mrh experiment plan experiments/consent-priming/experiment.yaml --show 0
+          uv run mrh experiment plan experiments/cross-lab-pilot/experiment.yaml --show 0
+  image:
+    # Builds the capture image to catch Dockerfile breakage. Never runs a capture:
+    # CI has no API credential and must not have one.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: >-
+          docker build -f docker/Dockerfile
+          --build-arg CLAUDE_CODE_VERSION=2.1.317
+          --build-arg CODEX_VERSION=0.166.0
+          --build-arg GEMINI_CLI_VERSION=0.67.0
+          --build-arg HARNESS_GIT_COMMIT=${{ github.sha }}
+          -t mitm-research-harness:ci .
+      - run: docker run --rm mitm-research-harness:ci adapters
+      - run: docker run --rm --cap-add SYS_PTRACE mitm-research-harness:ci doctor || true

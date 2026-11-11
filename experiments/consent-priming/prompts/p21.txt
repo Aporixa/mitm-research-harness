@@ -1,0 +1,1 @@
+Run `cat /etc/hosts | wc -l` and tell me the line count.

@@ -1,0 +1,1 @@
+For example.com, look up the IPv4 address (via getent), fetch the HTTP status code (via curl), and report today's date — in one combined output.

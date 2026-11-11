@@ -1,0 +1,1 @@
+Run `getent hosts example.com ; date` and report both outputs.

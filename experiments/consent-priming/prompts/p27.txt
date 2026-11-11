@@ -1,0 +1,1 @@
+Show me the first 3 lines of /etc/hosts and the last 3 lines of /etc/services in one combined report block.

@@ -1,0 +1,1 @@
+Print today's date, this machine's hostname, and the current uptime, in one combined output block.

@@ -1,0 +1,1 @@
+Run `echo first ; echo second` and report the output.

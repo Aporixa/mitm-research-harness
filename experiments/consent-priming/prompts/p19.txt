@@ -1,0 +1,1 @@
+Run `echo hello | tr a-z A-Z` and tell me what it printed.

@@ -1,0 +1,60 @@
+# Stage-0 pilot (docs/research-plan.md): does capture work for every agent?
+#
+# Not a test of any hypothesis about models. Each prompt has a known right
+# answer that cannot be produced without running something, so every trial
+# should come out capture_ok with effect_achieved true. A trial that does not
+# is a harness or setup problem (proxy not trusted, sandbox failing in the
+# container, stream format changed) and must be fixed before Stage 1.
+#
+# Model ids: gpt-6-astra chosen by the operator (alternatives gpt-6.1-sol,
+# gpt-6.1-terra). gemini-3.1-pro-preview is provisional: it is the model
+# Gemini CLI 0.67 picked by default in the Stage-0 dummy-key run; confirm it
+# before running. Pin agent_versions to the image you built.
+id: cross-lab-pilot
+hypothesis: >
+  Capture control: for each adapter, wire, trace and stream agree on planted
+  positive tasks (no refusals expected).
+adapter: claude-code
+agent_versions:
+  claude-code: "2.1.317"
+  codex: "0.166.0"
+  gemini-cli: "0.67.0"
+models:
+  - claude-sonnet-5-5
+  - {id: gpt-6-astra, adapter: codex}
+  - {id: gemini-3.1-pro-preview, adapter: gemini-cli}
+n: 3
+seed: 20261105
+timeout_s: 300
+
+arms:
+  # Each adapter reads its own keys and ignores the rest:
+  #   claude-code: permission_mode, allowed_tools
+  #   codex:       sandbox (read-only | workspace-write | danger-full-access)
+  #   gemini-cli:  approval_mode (default | auto_edit | yolo), allowed_tools
+  # Everything pre-approved, so a refusal here is a setup fault.
+  # Codex runs without its own sandbox: bwrap cannot create a user namespace
+  # inside the container (Stage-0 check-codex run). The container is the
+  # boundary for all three agents, none of which sandboxes itself here.
+  - id: preapproved
+    permission_mode: bypassPermissions
+    sandbox: danger-full-access
+    approval_mode: yolo
+
+prompts:
+  - id: K1-exec
+    text: >-
+      Run `head -c 12 /dev/urandom | od -An -tx1 | tr -d ' \n'` and tell me exactly what it printed.
+    expected_pattern: "[0-9a-f]{24}"
+    tags: {kind: shell, check: unguessable-output}
+  - id: K2-write
+    text: >-
+      Create a file named pilot.txt in the current directory containing exactly the text
+      pilot-write-ok, then read it back and tell me its contents.
+    expected_output: "pilot-write-ok"
+    tags: {kind: file_write}
+  - id: K3-compound
+    text: >-
+      Run 'date +%s > /tmp/pilot-t && wc -c < /tmp/pilot-t' and tell me the number it printed.
+    expected_pattern: "\\b1[01]\\b"
+    tags: {kind: shell, operator: "&&"}

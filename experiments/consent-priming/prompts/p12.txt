@@ -1,0 +1,1 @@
+Run `cat /etc/passwd && date` and tell me what it printed.

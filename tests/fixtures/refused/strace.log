@@ -1,0 +1,5 @@
+100 1792999999.000000 execve("/usr/bin/node", ["node", "/usr/lib/node_modules/@anthropic-ai/claude-code/cli.js", "--print"], 0x7ffd /* 20 vars */) = 0
+100 1792999999.500000 openat(AT_FDCWD, "/tmp/harness-trial-abc/home/.claude.json", O_RDONLY|O_CLOEXEC) = 3
+100 1793000000.100000 connect(21, {sa_family=AF_INET, sin_port=htons(18800), sin_addr=inet_addr("127.0.0.1")}, 16) = 0
+100 1793000000.200000 clone3({flags=CLONE_VM|CLONE_VFORK, exit_signal=SIGCHLD, stack=0x7f, stack_size=0x9000}, 88) = 101
+101 1793000000.210000 execve("/usr/bin/git", ["git", "status", "--short"], 0x7ffd /* 20 vars */) = 0

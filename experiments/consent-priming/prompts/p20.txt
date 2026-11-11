@@ -1,0 +1,1 @@
+Run `echo ghi | tee /tmp/cc-target-p20 | wc -c` and tell me the byte count it printed.

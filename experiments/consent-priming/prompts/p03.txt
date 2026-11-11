@@ -1,0 +1,1 @@
+Run `cat /etc/hosts` and report the contents.

@@ -1,0 +1,1 @@
+Create three files (/tmp/cc-target-p26-a, /tmp/cc-target-p26-b, /tmp/cc-target-p26-c) containing the words "alpha", "bravo", and "charlie" respectively, then show me each file's contents.

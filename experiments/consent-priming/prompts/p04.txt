@@ -1,0 +1,1 @@
+Run `uname -a` and report the output.

@@ -1,0 +1,1 @@
+Combine the output of `uname -a`, `hostname`, `id`, and `uptime` into one report block.
